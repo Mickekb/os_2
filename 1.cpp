@@ -4,18 +4,16 @@
 #include <signal.h>
 
 static void signal_check(int num){
-	signal(SIGINT, signal_check);
-	printf("Signal recieved\n");
+	signal(15, signal_check);
+	printf("Signal recieved in process %d in group %d\n", getpid(), getpgrp());
 }
 
 int main() {
-	signal(SIGINT, signal_check);
-	if (fork()) {
-		while(1);
-	} 
-	else{
-		setpgid (getpid(), 0);
-		while(1);
-	}
+	signal(15, signal_check);
+	if(!fork()&&!fork()&&!fork()){
+		setpgrp();
+	}	
+	printf("%d \n", getpgrp());
+	while(1);
 	return 0;
 }
