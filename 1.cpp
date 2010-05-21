@@ -4,20 +4,18 @@
 #include <signal.h>
 
 static void signal_check(int num){
-	printf("Signal recieved");
 	signal(SIGINT, signal_check);
+	printf("Signal recieved\n");
 }
 
-int main(){
+int main() {
 	signal(SIGINT, signal_check);
-	if(fork()){
-		
+	if (fork()) {
 		while(1);
-	}
+	} 
 	else{
-		setpgid(getpid(),0);
+		setpgid (getpid(), 0);
 		while(1);
-		
 	}
 	return 0;
 }
