@@ -38,6 +38,7 @@ int main(){
 			}
 			else{
 				my_input[i]=0;
+				++i;
 			}
 		}
 		if(!err){
@@ -48,7 +49,6 @@ int main(){
 				err=true;
 			}
 			else{
-				++i;
 				if(my_input[i]!='>'){
 					err=true;
 				}
@@ -79,6 +79,7 @@ int main(){
 			}
 			else{
 				my_input[i]=0;
+				++i;
 			}
 		}
 
@@ -90,7 +91,6 @@ int main(){
 				err=true;
 			}
 			else{
-				++i;
 				if(my_input[i]!='>'){
 					err=true;
 				}
@@ -116,25 +116,21 @@ int main(){
 			while(my_input[i]!=' '&&i<str_len){
 				++i;
 			}
-			if(i==str_len){
-				my_input[i+1]=0;
-			}
-			else{
-				my_input[i]=0;
-			}
+			my_input[i]=0;
+			++i;			
 		}
 		
 		if(!err){
 			while(my_input[i]==' '&&i<str_len){
 				++i;
 			}
-			if(i!=str_len){
+			if(i<str_len){
 				err=true;
 			}
 		}
 		
 		if(!err){
-			printf("p1: %s, p2: %s, p3: %s \n", p1, p2, p3);
+			printf("Correct input; p1: %s, p2: %s, p3: %s \n", p1, p2, p3);
 		}
 		else{
 			printf("Wrong format. Right is: p1 > p2 > p3\n");
