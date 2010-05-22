@@ -124,7 +124,7 @@ int main(){
 			while(my_input[i]!=' '&&i<str_len){
 				++i;
 			}
-			my_input[i]=0;
+			my_input[i-1]=0;
 			++i;			
 		}
 		
@@ -138,7 +138,7 @@ int main(){
 		}
 		
 		if(!err){
-			printf("Correct input; p1: %s, p2: %s, p3: %s \n", p1, p2, p3);
+			printf("Correct input; p1: %s, p2: %s, p3: %s.\n", p1, p2, p3);
 			//set pipes
 			if (pipe(pipes[0])) {
 			    printf("Cant open first pipe");
@@ -161,8 +161,12 @@ int main(){
 					return 0;
 				}
 				close_pipe(1);
-				execlp(p1,p1,NULL);
-				exit(0);
+				if(execlp(p1,p1,NULL)){
+					printf("1");
+					fflush(stdout);
+				}
+				
+				return 0;
 			}
 			else if(proc1==-1){
 				printf("Cant fork");
@@ -178,7 +182,10 @@ int main(){
 					return 0;
 				}
 				close_pipe(1);
-				execlp(p2,p2,NULL);
+				if(execlp(p2,p2,NULL)){
+					printf("2");
+					fflush(stdout);
+				}
 				return 0;
 			}
 			else if(proc2==-1){
@@ -195,7 +202,10 @@ int main(){
 					return 0;
 				}
 				close_pipe(1);
-				execlp(p3,p3,NULL);
+				if(execlp(p3,p3,NULL)){
+					printf("3");
+					fflush(stdout);
+				}
 				return 0;
 			}
 			else if(proc3==-1){
