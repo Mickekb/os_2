@@ -53,6 +53,7 @@ void recount_life(char** from, char** to){
 		}
 		//printf("\n");
 	}
+	str2_to_str();
 }
 
 void init_life(){
@@ -92,6 +93,8 @@ int life_do(void* arg){
 	while(1){
 		//show_life();
 		recount_life(life_field,life_field2);
+		//printf("%s \n",life_state);
+		//fflush(stdout);
 		char** chng;
 		chng=life_field;
 		life_field=life_field2;
