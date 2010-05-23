@@ -5,10 +5,12 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <netinet/in.h>
+#include <sched.h>
 
 char** life_field;
 char** life_field2;
 char* life_state = new char[101];
+int S, client;
 
 void str2_to_str(){
 	int k=0;
@@ -86,7 +88,7 @@ void show_life(){
 
 
 
-void life_do(){
+int life_do(void* arg){
 	while(1){
 		//show_life();
 		recount_life(life_field,life_field2);
@@ -96,11 +98,44 @@ void life_do(){
 		life_field2=chng;
 		sleep(1);
 	}
+	return 0;
+}
+
+int client_do(void* arg){
+	while(1){
+		int request;
+		if(!read(client, &request, sizeof(int))) {
+			close(client);
+			perror("Cant read socket");
+			return -1;
+		}
+		int pid=fork();
+		//if(request!=1)
+	    	//	continue;
+		if(pid==0){
+			if (!write(client, life_state, 101*sizeof(char))){
+				close(client);
+				perror("Cant write socket");
+		    		return -1;
+			}
+			close(S);
+			close(client);
+			return 0;
+		}
+	}
+	return 0;
 }
 
 int main(){
 	init_life();
-	int S = socket(AF_INET,SOCK_STREAM,0);
+	
+	void* child_stack = (void*) malloc(65536);
+   	if(clone(life_do, child_stack + 65535, CLONE_VM, NULL) == -1) {
+       		perror("Cant clone life_do");
+        	return -1;
+	}	
+
+	S = socket(AF_INET,SOCK_STREAM,0);
 	sockaddr_in SA;
 	SA.sin_family=AF_INET;
 	SA.sin_port=htons(3136);
@@ -122,31 +157,19 @@ int main(){
 	}
 
 	int length=sizeof(SA_client);
-	//while(1){
-		int client = accept(S, (sockaddr*)&SA_client,(socklen_t*)&length);
+	while(1){
+		client = accept(S, (sockaddr*)&SA_client,(socklen_t*)&length);
 		if(client < 0) {
 			perror("Cant get client");
 			return -1;
 		}
-
-		int request;
-		if(!read(client, &request, sizeof(int))) {
-            		close(client);
-			perror("Cant read socket");
-            		return -1;
-        	}
-
-       		//if(request!=1)
-            	//	continue;
 		
-		printf("%s",life_state);
-		if (!write(client, life_state, 101*sizeof(char))){
-			close(client);
-			perror("Cant write socket");
-            		return -1;
-		}
-		close(S);
-	//}
-
+		void* child_stack = (void*) malloc(65536);
+		if(clone(client_do, child_stack + 65535, CLONE_VM, NULL) == -1) {
+	       		perror("Cant clone client");
+			return -1;
+		}	
+	}
+	close(S);
 	return 0;
 }
