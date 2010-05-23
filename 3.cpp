@@ -2,10 +2,24 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
+#include <sys/socket.h>
+#include <sys/types.h>
+#include <netinet/in.h>
 
 char** life_field;
 char** life_field2;
+char* life_state = new char[101];
 
+void str2_to_str(){
+	int k=0;
+	for(int i=0; i<10; ++i){
+		for(int j=0;j<10;++j){
+			life_state[k]=life_field[i][j];
+			++k;
+		}
+	}
+	life_state[100]=0;
+}
 
 void recount_life(char** from, char** to){
 	for(int i=0;i<10;++i){
@@ -56,6 +70,7 @@ void init_life(){
 	strcpy(life_field[7], "0000000000");
 	strcpy(life_field[8], "0000000000");
 	strcpy(life_field[9], "0000000000");
+	str2_to_str();
 }
 
 void show_life(){
@@ -69,10 +84,11 @@ void show_life(){
 	printf("\n");
 }
 
-int main(){
-	init_life();
+
+
+void life_do(){
 	while(1){
-		show_life();
+		//show_life();
 		recount_life(life_field,life_field2);
 		char** chng;
 		chng=life_field;
@@ -80,5 +96,57 @@ int main(){
 		life_field2=chng;
 		sleep(1);
 	}
+}
+
+int main(){
+	init_life();
+	int S = socket(AF_INET,SOCK_STREAM,0);
+	sockaddr_in SA;
+	SA.sin_family=AF_INET;
+	SA.sin_port=htons(3136);
+	SA.sin_addr.s_addr=htonl(INADDR_ANY);
+
+	sockaddr_in SA_client;
+
+	if(S < 0){
+		perror("Cant create socket");
+		return -1;
+	}
+	if(bind(S, (sockaddr*)&SA, sizeof(SA)) < 0) {
+		perror("Cant bind socket");
+		return -1;
+	}
+	if (listen(S, 1) < 0) {
+		perror("Cant listen socket");
+		return -1;
+	}
+
+	int length=sizeof(SA_client);
+	//while(1){
+		int client = accept(S, (sockaddr*)&SA_client,(socklen_t*)&length);
+		if(client < 0) {
+			perror("Cant get client");
+			return -1;
+		}
+
+		int request;
+		if(!read(client, &request, sizeof(int))) {
+            		close(client);
+			perror("Cant read socket");
+            		return -1;
+        	}
+
+       		//if(request!=1)
+            	//	continue;
+		
+		printf("%s",life_state);
+		if (!write(client, life_state, 101*sizeof(char))){
+			close(client);
+			perror("Cant write socket");
+            		return -1;
+		}
+		close(S);
+	//}
+
 	return 0;
 }
