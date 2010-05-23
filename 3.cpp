@@ -105,19 +105,21 @@ int life_do(void* arg){
 }
 
 int client_do(void* arg){
+	int my_client=client;
 	while(1){
 		int request;
-		if(!read(client, &request, sizeof(int))) {
-			close(client);
+		if(!read(my_client, &request, sizeof(int))) {
+			close(my_client);
 			perror("Cant read socket");
 			return -1;
 		}
+		printf("%d\n", request);
 		int pid=fork();
 		//if(request!=1)
 	    	//	continue;
 		if(pid==0){
-			if (!write(client, life_state, 101*sizeof(char))){
-				close(client);
+			if (!write(my_client, life_state, 101*sizeof(char))){
+				close(my_client);
 				perror("Cant write socket");
 		    		return -1;
 			}
@@ -171,7 +173,7 @@ int main(){
 		if(clone(client_do, child_stack + 65535, CLONE_VM, NULL) == -1) {
 	       		perror("Cant clone client");
 			return -1;
-		}	
+		}
 	}
 	close(S);
 	return 0;
